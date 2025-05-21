@@ -1,26 +1,53 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import { TreeProvider } from './tree';
+import { DimProvider } from './dimProvider';
+import { MatchProvider } from './matchProvider';
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+  const matchProvider = new MatchProvider();
+  const dimProvider = new DimProvider(matchProvider);
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "text-overview" is now active!');
+  const treeView = vscode.window.createTreeView('text-overview.tree', {
+    treeDataProvider: new TreeProvider(matchProvider),
+  });
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('text-overview.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from text-overview!');
-	});
+  const toggleChineseOnlyCommand = vscode.commands.registerCommand(
+    'text-overview.toggleChineseOnly',
+    () => {
+      const config = vscode.workspace.getConfiguration('text-overview');
+      const currentValue = config.get('chineseOnly', false as boolean);
+      config.update('chineseOnly', !currentValue, true);
+    }
+  );
 
-	context.subscriptions.push(disposable);
+  const toggleDimCommand = vscode.commands.registerCommand(
+    'text-overview.toggleDimNonMatching',
+    () => {
+      const config = vscode.workspace.getConfiguration('text-overview');
+      const currentValue = config.get('dimNonMatching', false as boolean);
+      config.update('dimNonMatching', !currentValue, true);
+    }
+  );
+
+  const revealMatchCommand = vscode.commands.registerCommand(
+    'text-overview.revealMatch',
+    (range: vscode.Range) => {
+      const editor = vscode.window.activeTextEditor;
+      if (editor) {
+        editor.selection = new vscode.Selection(range.start, range.end);
+        editor.revealRange(range, vscode.TextEditorRevealType.InCenter);
+      }
+    }
+  );
+
+  context.subscriptions.push(
+    treeView,
+    revealMatchCommand,
+    toggleChineseOnlyCommand,
+    toggleDimCommand,
+    dimProvider,
+    matchProvider
+  );
 }
 
-// This method is called when your extension is deactivated
 export function deactivate() {}

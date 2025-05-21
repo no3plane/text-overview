@@ -4,20 +4,79 @@
   "description": "纵览代码中的文本",
   "version": "0.0.1",
   "engines": {
-    "vscode": "^1.100.0"
+    "vscode": "^1.93.0"
   },
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onLanguage:javascript",
+    "onLanguage:typescript",
+    "onLanguage:javascriptreact",
+    "onLanguage:typescriptreact"
+  ],
   "main": "./out/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "text-overview",
+          "title": "文本概览",
+          "icon": "$(symbol-string)"
+        }
+      ]
+    },
+    "views": {
+      "text-overview": [
+        {
+          "id": "text-overview.tree",
+          "name": "字符串总览"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "text-overview.toggleChineseOnly",
+          "when": "view == text-overview.tree",
+          "group": "navigation"
+        },
+        {
+          "command": "text-overview.toggleDimNonMatching",
+          "when": "view == text-overview.tree",
+          "group": "navigation"
+        }
+      ]
+    },
     "commands": [
       {
-        "command": "text-overview.helloWorld",
-        "title": "Hello World"
+        "command": "text-overview.toggleChineseOnly",
+        "category": "文本总览",
+        "title": "仅匹配中文",
+        "icon": "$(symbol-key)"
+      },
+      {
+        "command": "text-overview.toggleDimNonMatching",
+        "category": "文本总览",
+        "title": "淡化未匹配的文本",
+        "icon": "$(jersey)"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "文本总览",
+      "properties": {
+        "text-overview.chineseOnly": {
+          "type": "boolean",
+          "default": false,
+          "description": "仅匹配中文"
+        },
+        "text-overview.dimNonMatching": {
+          "type": "boolean",
+          "default": false,
+          "description": "淡化未匹配的文本"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "pnpm run compile",
